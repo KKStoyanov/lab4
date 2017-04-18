@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.Set;
 import java.util.UUID;
 
 import javafx.animation.FadeTransition;
@@ -26,6 +27,7 @@ import pkgPokerEnum.eAction;
 import pkgPokerEnum.eGame;
 import pkgPokerBLL.Action;
 import pkgPokerBLL.GamePlay;
+import pkgPokerBLL.Player;
 import pkgPokerBLL.Table;
 
 public class PokerTableController implements Initializable {
@@ -66,12 +68,10 @@ public class PokerTableController implements Initializable {
 	@FXML
 	private ToggleButton btnPos2SitLeave;
 
-
 	@FXML
 	private Label lblPos1Name;
 	@FXML
 	private Label lblPos2Name;
-
 
 	@FXML
 	private HBox hBoxDeck;
@@ -101,14 +101,24 @@ public class PokerTableController implements Initializable {
 	public void GetGameState() {
 	}
 
-	//TODO: Lab #4 - Complete (fix) setiPlayerPosition
+	
 	public void btnSitLeave_Click(ActionEvent event) {
+		ToggleButton btn = (ToggleButton) event.getSource();
+		eAction Eact;
 
-		// Set the PlayerPosition in the Player
-		mainApp.getPlayer().setiPlayerPosition(1);
+		if ((btn.getId().equals("btnPos1SitLeave")) && (btn.getText().equals("Sit"))) {
+			mainApp.getPlayer().setiPlayerPosition(1);
+			Eact = eAction.Sit;
+
+		} else if ((btn.getId().equals("btnPos2SitLeave")) && (btn.getText().equals("Sit"))) {
+			mainApp.getPlayer().setiPlayerPosition(2);
+			Eact = eAction.Sit;
+		} else {
+			Eact = eAction.Leave;
+		}
 
 		// Build an Action message
-		Action act = new Action(eAction.Sit, mainApp.getPlayer());
+		Action act = new Action(Eact, mainApp.getPlayer());
 
 		// Send the Action to the Hub
 		mainApp.messageSend(act);
@@ -148,20 +158,41 @@ public class PokerTableController implements Initializable {
 			return hboxP1Cards;
 		case 2:
 			return hboxP2Cards;
- 
+
 		default:
 			return null;
 		}
 
 	}
 
-	//TODO: Lab #4 Complete the implementation
+	
 	public void Handle_TableState(Table HubPokerTable) {
+		btnStartGame.setDisable(true);
+		int numOfPlayers = 0;
+		Set setOfKeys = HubPokerTable.getTablePlayers().keySet();
+		Iterator it = setOfKeys.iterator();
+		while (it.hasNext()) {
+			UUID key = (UUID) it.next();
+			Player p = (Player) HubPokerTable.getTablePlayers().get(key);
+			if (p.getiPlayerPosition() == mainApp.getPlayer().getiPlayerPosition()) {
+				numOfPlayers++;
+				this.getSitLeave(p.getiPlayerPosition()).setText("Leave");
+				this.getPlayerLabel(p.getiPlayerPosition()).setText(p.getPlayerName());
+			} else {
+				this.getSitLeave(p.getiPlayerPosition()).setVisible(false);
+				this.getPlayerLabel(p.getiPlayerPosition()).setText(p.getPlayerName());
+			}
+		}
+		if (numOfPlayers == 2) {
+			btnStartGame.setDisable(false);
+		} else {
+			btnStartGame.setDisable(true);
+		}
 
 	}
 
 	public void Handle_GameState(GamePlay HubPokerGame) {
-		
+
 	}
 
 	private ImageView BuildImage(int iCardNbr) {
@@ -178,6 +209,7 @@ public class PokerTableController implements Initializable {
 
 	@FXML
 	void btnStart_Click(ActionEvent event) {
+
 		// Start the Game
 		Action act = new Action(eAction.StartGame, mainApp.getPlayer());
 
@@ -189,6 +221,7 @@ public class PokerTableController implements Initializable {
 
 		// Send the Action to the Hub
 		mainApp.messageSend(act);
+
 	}
 
 	@FXML
