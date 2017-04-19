@@ -100,18 +100,17 @@ public class PokerTableController implements Initializable {
 	@FXML
 	public void GetGameState() {
 	}
-
 	
 	public void btnSitLeave_Click(ActionEvent event) {
 		ToggleButton btn = (ToggleButton) event.getSource();
 		eAction Eact;
 
-		if ((btn.getId().equals("btnPos1SitLeave")) && (btn.getText().equals("Sit"))) {
-			mainApp.getPlayer().setiPlayerPosition(1);
+		if ((btn.getId().equals("btnPos2SitLeave")) && (btn.getText().equals("Sit"))) {
+			mainApp.getPlayer().setiPlayerPosition(2);
 			Eact = eAction.Sit;
 
-		} else if ((btn.getId().equals("btnPos2SitLeave")) && (btn.getText().equals("Sit"))) {
-			mainApp.getPlayer().setiPlayerPosition(2);
+		} else if ((btn.getId().equals("btnPos1SitLeave")) && (btn.getText().equals("Sit"))) {
+			mainApp.getPlayer().setiPlayerPosition(1);
 			Eact = eAction.Sit;
 		} else {
 			Eact = eAction.Leave;
@@ -165,28 +164,31 @@ public class PokerTableController implements Initializable {
 
 	}
 
-	
 	public void Handle_TableState(Table HubPokerTable) {
-		btnStartGame.setDisable(true);
-		int numOfPlayers = 0;
-		Set setOfKeys = HubPokerTable.getTablePlayers().keySet();
-		Iterator it = setOfKeys.iterator();
-		while (it.hasNext()) {
-			UUID key = (UUID) it.next();
-			Player p = (Player) HubPokerTable.getTablePlayers().get(key);
-			if (p.getiPlayerPosition() == mainApp.getPlayer().getiPlayerPosition()) {
-				numOfPlayers++;
-				this.getSitLeave(p.getiPlayerPosition()).setText("Leave");
-				this.getPlayerLabel(p.getiPlayerPosition()).setText(p.getPlayerName());
-			} else {
-				this.getSitLeave(p.getiPlayerPosition()).setVisible(false);
-				this.getPlayerLabel(p.getiPlayerPosition()).setText(p.getPlayerName());
-			}
-		}
-		if (numOfPlayers == 2) {
+
+		Iterator it = HubPokerTable.getTablePlayers().entrySet().iterator();
+		if(HubPokerTable.getTablePlayers().size() == 2){
 			btnStartGame.setDisable(false);
-		} else {
+		}
+		else
 			btnStartGame.setDisable(true);
+		while (it.hasNext()) {
+			Map.Entry pair = (Map.Entry) it.next();
+			Player p = (Player) pair.getValue();
+			getPlayerLabel(p.getiPlayerPosition()).setText(p.getPlayerName());
+			if (p.getiPokerClientID() == mainApp.getPlayer().getiPokerClientID()) {
+				getSitLeave(p.getiPlayerPosition()).setVisible(true);
+				getSitLeave(p.getiPlayerPosition()).setText("Leave");
+				
+				for(int i = 1; i < 3; i++){
+					if(i != p.getiPlayerPosition())
+						getSitLeave(i).setVisible(false);
+				}
+
+			} else {
+				getSitLeave(p.getiPlayerPosition()).setVisible(false);
+			} 
+
 		}
 
 	}

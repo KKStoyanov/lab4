@@ -210,7 +210,7 @@
                         </FlowPane>
                      </children>
                   </HBox>
-                  <Label id="lblPlayerPos3" fx:id="lblPlayerPos3" text="Player 2" />
+                  <Label id="lblPlayerPos3" fx:id="lblPlayerPos2" text="Player 2" />
                </children>
             </GridPane>
          </children>
